@@ -1,6 +1,6 @@
 float:
   any:
-  - base_args: ['@metric', '@dimension']
+  - base_args: ['@metric']
     constructor: LanceIVF
     disabled: false
     docker_tag: ann-benchmarks-lance
@@ -15,7 +15,7 @@ float:
 #         num_partitions: [256] # rows^1/2
 #         num_sub_vectors: [96] # vector dimension count / 16
 #         num_bits: [4, 8]      # 8
-  - base_args: ['@metric', '@dimension']
+  - base_args: ['@metric']
     constructor: LanceHNSW
     disabled: true
     docker_tag: ann-benchmarks-lance

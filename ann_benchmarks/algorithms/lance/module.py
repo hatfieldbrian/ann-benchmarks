@@ -13,16 +13,15 @@ class Lance(BaseANN):
     @staticmethod
     def directory():
         return '.'#data/my-lance'
-    def __init__(self, metric, dim, index_type):
+    def __init__(self, metric, index_type):
         self._metric_type = {'angular': 'cosine', 'euclidean': 'L2'}[metric]
-        self._dim = dim
         self.db = lancedb.connect(uri=self.directory())
         self.index_type = index_type
 
-    def create_table(self):
+    def create_table(self, dim):
         schema = pa.schema([
             pa.field('id', pa.string()),
-            pa.field(self.vector_column_name(), pa.list_(pa.float32(), list_size=self._dim)),
+            pa.field(self.vector_column_name(), pa.list_(pa.float32(), list_size=dim)),
         ])
         self.table = self.db.create_table(self.table_name(), schema=schema)
         print(f'Table {self.table.name} created.')
@@ -42,12 +41,25 @@ class Lance(BaseANN):
         )
         print(f'Index creation done.')
 
+    batch_number = 0
+    def make_batches(X):
+        batch_size = 1000
+        for i in range(i, len(X), batch_size):
+           pass
+
     def fit(self, X):
+        print(type(X))
+        print(X.dtype)
+        print(X.ndim)
+        dim = len(X[0])
+        print(dim)
+        print(len(X))
         schema = pa.schema([
             pa.field('id', pa.string()),
-            pa.field(self.vector_column_name(), pa.list_(pa.float32(), list_size=self._dim)),
+            pa.field(self.vector_column_name(), pa.list_(pa.float32(), list_size=dim)),
         ])
-        self.table = self.db.create_table(self.table_name(), data=X, schema=schema)
+        #self.table = self.db.create_table(self.table_name(), data=X, schema=schema)
+        self.table = self.db.create_table(self.table_name(), data=X.tolist())
         print(f'Table {self.table.name} created.')
         #self.create_table()
         #self.insert(X)
@@ -61,9 +73,9 @@ class Lance(BaseANN):
         return
 
 class LanceIVF(Lance):
-    def __init__(self, metric, dim, args):
-        super().__init__(metric, dim, 'IVF_' + args['quantization'])
+    def __init__(self, metric, args):
+        super().__init__(metric, 'IVF_' + args['quantization'])
 
 class LanceHNSW(Lance):
-    def __init__(self, metric, dim, args):
-        super().__init__(metric, dim, 'IVF_HNSW_' + args['quantization'])
+    def __init__(self, metric, args):
+        super().__init__(metric, 'IVF_HNSW_' + args['quantization'])
