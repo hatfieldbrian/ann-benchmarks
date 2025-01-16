@@ -7,14 +7,14 @@ float:
     module: ann_benchmarks.algorithms.lance
     name: lance-ivf
     run_groups:
-      IVFPQ:
+      IVF:
         args:
           quantization: ['PQ',
 #           'FLAT',
             ]
-#         num_partitions: [256] # rows^1/2
-#         num_sub_vectors: [96] # vector dimension count / 16
-#         num_bits: [4, 8]      # 8
+          num_partitions: [256, 512, 1024] # rows^1/2
+          num_sub_vectors: [96, 120, 240]  # vector dimension count / 16
+          num_bits: [4, 8]                 # 8
   - base_args: ['@metric']
     constructor: LanceHNSW
     disabled: true
@@ -24,8 +24,8 @@ float:
     run_groups:
       HNSW:
         args:
-         quantization: ['PQ',
-#          'SQ',
-           ]
-#        m: [5, 48]
-#        ef_construction: [150, 300, 500]
+          quantization: ['PQ',
+#           'SQ',
+            ]
+          m: [5, 48]
+          ef_construction: [150, 300, 500]

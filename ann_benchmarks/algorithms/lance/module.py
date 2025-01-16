@@ -5,10 +5,10 @@ import pyarrow as pa
 from ..base.module import BaseANN
 
 class Lance(BaseANN):
-    def __init__(self, metric, index_type):
-        self._metric_type = {'angular': 'cosine', 'euclidean': 'L2'}[metric]
+    def __init__(self, metric, index_args):
+        index_args['metric'] = {'angular': 'cosine', 'euclidean': 'L2'}[metric]
         self.db = lancedb.connect(uri='.')
-        self.index_type = index_type
+        self.index_args = index_args
         self.name = type(self).__name__
 
     def fit(self, X):
@@ -20,7 +20,7 @@ class Lance(BaseANN):
             'test_lance',
             data = pa.Table.from_pandas(
                 df = pd.DataFrame(
-                    data = list(enumerate(X)),
+                    data = list(enumerate(X[:1000])),
                     columns = schema.names,
                     copy = False,
                     ),
@@ -28,14 +28,8 @@ class Lance(BaseANN):
             schema = schema,
             )
         print(f'Table {self.table.name} created.')
-        print(f'Creating index...')
-        self.table.create_index(
-            metric = self._metric_type,
-            vector_column_name = vector_field.name,
-            index_type = self.index_type,
-#            num_partitions = num_partitions,
-#            num_sub_vectors = num_sub_vectors,
-            )
+        print(f'Creating index with {self.index_args}...')
+        self.table.create_index(**self.index_args, vector_column_name = vector_field.name)
         print(f'Index creation done.')
 
     def query(self, v, n):
@@ -46,9 +40,13 @@ class Lance(BaseANN):
         return
 
 class LanceIVF(Lance):
-    def __init__(self, metric, args):
-        super().__init__(metric, 'IVF_' + args['quantization'])
+    def __init__(self, metric, index_args):
+        index_args['index_type'] = 'IVF_' + index_args['quantization']
+        del index_args['quantization']
+        super().__init__(metric, index_args)
 
 class LanceHNSW(Lance):
-    def __init__(self, metric, args):
-        super().__init__(metric, 'IVF_HNSW_' + args['quantization'])
+    def __init__(self, metric, index_args):
+        index_args['index_type'] = 'IVF_HNSW_' + index_args['quantization']
+        del index_args['quantization']
+        super().__init__(metric, index_args)
