@@ -17,7 +17,7 @@ float:
           num_bits: [4, 8]                 # 8
   - base_args: ['@metric']
     constructor: LanceHNSW
-    disabled: true
+    disabled: false
     docker_tag: ann-benchmarks-lance
     module: ann_benchmarks.algorithms.lance
     name: lance-hnsw
