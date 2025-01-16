@@ -20,7 +20,7 @@ class Lance(BaseANN):
             'test_lance',
             data = pa.Table.from_pandas(
                 df = pd.DataFrame(
-                    data = list(enumerate(X[:10000])),
+                    data = list(enumerate(X)),
                     columns = schema.names,
                     copy = False,
                     ),
