@@ -1,4 +1,5 @@
 import lancedb
+import pandas as pd
 import pyarrow as pa
 
 from ..base.module import BaseANN
@@ -41,11 +42,11 @@ class Lance(BaseANN):
         )
         print(f'Index creation done.')
 
-    batch_number = 0
     def make_batches(X):
         batch_size = 1000
         for i in range(i, len(X), batch_size):
-           pass
+            yield pa.RecordBatch.from_arrays()
+           
 
     def fit(self, X):
         print(type(X))
@@ -54,12 +55,41 @@ class Lance(BaseANN):
         dim = len(X[0])
         print(dim)
         print(len(X))
+        #x = X.tolist();print(len(x))
+        #schema = pa.schema([
+            #pa.field('id', pa.string()),
+        #    pa.field(self.vector_column_name(), pa.list_(pa.float32(), list_size=dim)),
+        #])
+            
+        #x = pd.DataFrame(X, columns=[self.vector_column_name()] 
+        #x = pa.Table.from_pandas(df=X, schema=schema, preserve_index=True);print(len(x))
+        #x = pa.Table.from_arrays(pa.array(X), schema=schema);print(len(x))
+        x = list(enumerate(X))
+        print(len(x))
+        print(len(x[0]))
+        print(len(x[0][1]))
         schema = pa.schema([
-            pa.field('id', pa.string()),
+            pa.field('id', pa.int32()),
             pa.field(self.vector_column_name(), pa.list_(pa.float32(), list_size=dim)),
         ])
+        #df = pd.DataFrame(enumerate(X))
+        df = pd.DataFrame(x, columns=schema.names, copy=False)
+        print(len(df))
+        print(df.columns)
+        print(df.index)
+        print(df.dtypes)
+        print(df.info)
+            #names=['id', self.vector_column_name()])
+        #print(type(enumerate(X)))
+        #print(type(list(enumerate(X))[0]))
+
+        #x = pa.Table.from_arrays(arrays=[enumerate(X)], schema=schema)
         #self.table = self.db.create_table(self.table_name(), data=X, schema=schema)
-        self.table = self.db.create_table(self.table_name(), data=X.tolist())
+        #self.table = self.db.create_table(self.table_name(), data=list(enumerate(X)), schema=schema)
+        #self.table = self.db.create_table(self.table_name(), data=x)
+        self.table = self.db.create_table(self.table_name(), data=pa.Table.from_pandas(df=df), schema=schema)
+        #self.table = self.db.create_table(self.table_name(), data=X.tolist())
+        #self.table = self.db.create_table(self.table_name(), data=make_batches(), schema=schema)
         print(f'Table {self.table.name} created.')
         #self.create_table()
         #self.insert(X)
