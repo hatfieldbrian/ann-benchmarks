@@ -12,9 +12,18 @@ float:
           quantization: ['PQ',
 #           'FLAT',
             ]
-          num_partitions: [256, 512, 1024] # rows^1/2
-          num_sub_vectors: [96, 120, 240]  # vector dimension count / 16
-          num_bits: [4, 8]                 # 8
+          num_partitions: [
+#           256, 512, 1024,
+            1000
+            ] # rows^1/2
+          num_sub_vectors: [
+#           96, 192, 480,
+            960
+            ] # vector dimension count / 16
+          num_bits: [
+#           4,
+            8,
+            ] # 8
   - base_args: ['@metric']
     constructor: LanceHNSW
     disabled: false

@@ -16,7 +16,7 @@ class Lance(BaseANN):
         self.id_field = pa.field('id', pa.int32())
         vector_field = pa.field('vector', pa.list_(pa.float32(), list_size=dim))
         schema = pa.schema([self.id_field, vector_field])
-        print(f'Creating {self.table.name} table...')
+        print(f'Creating table...')
         self.table = self.db.create_table(
             'test_lance',
             data = pa.Table.from_pandas(
