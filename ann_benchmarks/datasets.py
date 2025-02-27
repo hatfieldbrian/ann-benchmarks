@@ -402,6 +402,41 @@ def random_bitstring(out_fn: str, n_dims: int, n_samples: int, n_queries: int) -
     write_output(X_train, X_test, out_fn, "hamming", "bit")
 
 
+def saransh(out_fn: str, vector_count: int, distance: str) -> None:
+	import pyarrow as pa
+	import pyarrow.parquet as pq
+	import time
+
+	dimension_count = 384
+	query_count = 100
+	vector_count += query_count
+	X = numpy.empty((vector_count, dimension_count), dtype=numpy.float32)
+	schema = pa.schema([pa.field('embeddings', pa.list_(pa.float32(), list_size=dimension_count))])
+	vector_count_cur = 0
+	t0 = t1 = time.time()
+	for parquet_file_name in [f'/ssd2/datapile/dir2/{i}.parquet' for i in list(range(501, 676)) + [1000]]:
+		batch = pq.read_table(parquet_file_name, columns=['embeddings'], schema=schema)['embeddings']
+		def assign():
+			nonlocal vector_count_cur, t1
+			X[vector_count_cur:vector_count_next, :] = batch.to_numpy().tolist()
+			vector_count_cur = vector_count_next
+			t = time.time()
+			d0 = t - t0
+			d1 = t - t1
+			t1 = t
+			print(f'{vector_count_cur:10,}  {d0:4.0f} s  {vector_count_cur/d0:7,.0f} rows/s  {len(batch):7,}  {d1:4.2f} s  {len(batch)/d1:7,.0f} rows/s')
+		vector_count_next = vector_count_cur + len(batch)
+		if vector_count_next >= vector_count:
+			vector_count_next = vector_count
+			batch = batch[:vector_count - vector_count_cur]
+			assign()
+			break
+		assign()
+
+	X_train, X_test = train_test_split(X, test_size=query_count)
+	write_output(X_train, X_test, out_fn, distance, count=100)
+
+
 def sift_hamming(out_fn: str, fn: str) -> None:
     import tarfile
 
@@ -596,6 +631,12 @@ DATASETS: Dict[str, Callable[[str], None]] = {
     "random-l-256-hamming": lambda out_fn: random_bitstring(out_fn, 256, 100000, 1000),
     "random-s-jaccard": lambda out_fn: random_jaccard(out_fn, n=10000, size=20, universe=40),
     "random-l-jaccard": lambda out_fn: random_jaccard(out_fn, n=100000, size=70, universe=100),
+    "saransh-1m-384-euclidean" : lambda out_fn: saransh(out_fn,  1_000_000, 'euclidean'),
+    "saransh-1m-384-angular"   : lambda out_fn: saransh(out_fn,  1_000_000, 'angular'),
+    "saransh-10m-384-euclidean": lambda out_fn: saransh(out_fn, 10_000_000, 'euclidean'),
+    "saransh-10m-384-angular"  : lambda out_fn: saransh(out_fn, 10_000_000, 'angular'),
+    "saransh-30m-384-euclidean": lambda out_fn: saransh(out_fn, 30_000_000, 'euclidean'),
+    "saransh-30m-384-angular"  : lambda out_fn: saransh(out_fn, 30_000_000, 'angular'),
     "sift-128-euclidean": sift,
     "nytimes-256-angular": lambda out_fn: nytimes(out_fn, 256),
     "nytimes-16-angular": lambda out_fn: nytimes(out_fn, 16),
