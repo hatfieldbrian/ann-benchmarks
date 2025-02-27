@@ -9,7 +9,8 @@ float:
     run_groups:
       IVF:
         args:
-          quantization: ['PQ',
+          quantization: [
+            'PQ',
 #           'FLAT',
             ]
           num_partitions: [
@@ -17,8 +18,9 @@ float:
             1000
             ] # rows^1/2
           num_sub_vectors: [
+            128,
 #           96, 192, 480,
-            960
+#            960
             ] # vector dimension count / 16
           num_bits: [
 #           4,
@@ -33,8 +35,23 @@ float:
     run_groups:
       HNSW:
         args:
-          quantization: ['PQ',
-#           'SQ',
+          quantization: [
+#          'PQ',
+           'SQ',
             ]
-          m: [5, 48]
-          ef_construction: [150, 300, 500]
+          m: [
+            5,
+#            48,
+            ]
+          ef_construction: [
+            150,
+#            300, 500,
+            ]
+        query_args: [
+          [ # nprobes
+          20,
+          ], # 20
+          [ # refine_factor
+          None,
+          ], # None
+          ]

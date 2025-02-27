@@ -33,8 +33,13 @@ class Lance(BaseANN):
         self.table.create_index(**self.index_args, vector_column_name = vector_field.name)
         print(f'Index creation done.')
 
+    def set_query_arguments(self, nprobes, refine_factor):
+        self.nprobes = nprobes
+        self.refine_factor = refine_factor
+
     def query(self, v, n):
-        return self.table.search(v).limit(n).to_arrow().column(self.id_field.name).to_pylist()
+        return self.table.search(v).limit(n).nprobes(self.nprobes).refine_factor(self.refine_factor).\
+            to_arrow().column(self.id_field.name).to_pylist()
 
     @staticmethod
     def done():
